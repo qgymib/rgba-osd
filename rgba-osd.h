@@ -60,17 +60,15 @@ typedef struct rgba_osd_config
 
 /**
  * @brief The pixel overlay algorithm function.
- * @param[in] canvas        Canvas pixels.
+ * @param[out] canvas       Canvas pixels.
  * @param[in] canvas_sz     The size of canvas (in pixels).
  * @param[in] canvas_pos    The pixel position on canvas.
  * @param[in] payload       The payload pixels.
  * @param[in] payload_sz    The size of payload (in pixels).
- * @param[in] payload_pos   The pixel position on payload.
- * @return The pixel draw on canvas.
  */
-typedef rgba_osd_pixel_t (*rgba_osd_overlay_algorithm_fn)(
-    const rgba_osd_pixel_t *canvas, const rgba_osd_size_t *canvas_sz, const rgba_osd_size_t *canvas_pos,
-    const rgba_osd_pixel_t *payload, const rgba_osd_size_t *payload_sz, const rgba_osd_size_t *payload_pos);
+typedef void (*rgba_osd_overlay_algorithm_fn)(rgba_osd_pixel_t *canvas, const rgba_osd_size_t *canvas_sz,
+                                              const rgba_osd_size_t *canvas_pos, const rgba_osd_pixel_t *payload,
+                                              const rgba_osd_size_t *payload_sz);
 
 /**
  * @brief Initialize a osd overlay handle.
@@ -92,7 +90,7 @@ void rgba_osd_exit(rgba_osd_t *osd);
  * @param[in] osd   The OSD handle.
  * @return Canvas pixels.
  */
-rgba_osd_pixel_t *rgba_osd_pixels(rgba_osd_t *osd);
+rgba_osd_pixel_t *rgba_osd_canvas(rgba_osd_t *osd);
 
 /**
  * @brief Get canvas size.
@@ -120,26 +118,47 @@ void rgba_osd_end_frame(rgba_osd_t *osd);
  * @param[in] payload_sz    Width and height of the payload, in pixels.
  * @param[in] canvas_pos    The render position.
  * @param[in] algo          Overlay algorithm. Available algorithms are:
+ *   + #rgba_osd_overlay_algorithm_compositing_over_premultiplied().
+ *   + #rgba_osd_overlay_algorithm_compositing_over_straight().
  *   + #rgba_osd_overlay_algorithm_replace_all().
  *   + #rgba_osd_overlay_algorithm_replace_non_alpha().
+ *   In most condition #rgba_osd_overlay_algorithm_compositing_over_premultiplied()
+ *   should be good enought.
  */
 void rgba_osd_overlay(rgba_osd_t *osd, const rgba_osd_pixel_t *payload, const rgba_osd_size_t *payload_sz,
                       const rgba_osd_size_t *canvas_pos, rgba_osd_overlay_algorithm_fn algo);
 
 /**
+ * @brief \p payload is over \p canvas.
+ */
+void rgba_osd_overlay_algorithm_compositing_over_premultiplied(rgba_osd_pixel_t       *canvas,
+                                                               const rgba_osd_size_t  *canvas_sz,
+                                                               const rgba_osd_size_t  *canvas_pos,
+                                                               const rgba_osd_pixel_t *payload,
+                                                               const rgba_osd_size_t  *payload_sz);
+
+/**
+ * @brief \p payload is over \p canvas.
+ */
+void rgba_osd_overlay_algorithm_compositing_over_straight(rgba_osd_pixel_t *canvas, const rgba_osd_size_t *canvas_sz,
+                                                          const rgba_osd_size_t  *canvas_pos,
+                                                          const rgba_osd_pixel_t *payload,
+                                                          const rgba_osd_size_t  *payload_sz);
+
+/**
  * @brief Replace all pixles with \p payload.
  */
-rgba_osd_pixel_t rgba_osd_overlay_algorithm_replace_all(
-    const rgba_osd_pixel_t *canvas, const rgba_osd_size_t *canvas_sz, const rgba_osd_size_t *canvas_pos,
-    const rgba_osd_pixel_t *payload, const rgba_osd_size_t *payload_sz, const rgba_osd_size_t *payload_pos);
+void rgba_osd_overlay_algorithm_replace_all(rgba_osd_pixel_t *canvas, const rgba_osd_size_t *canvas_sz,
+                                            const rgba_osd_size_t *canvas_pos, const rgba_osd_pixel_t *payload,
+                                            const rgba_osd_size_t *payload_sz);
 
 /**
  * @brief Replace pixles that has non-zero alpha channel.
  * If the alpha channel in \p payload is non-zero, replace the original pixles on \p canvas.
  */
-rgba_osd_pixel_t rgba_osd_overlay_algorithm_replace_non_alpha(
-    const rgba_osd_pixel_t *canvas, const rgba_osd_size_t *canvas_sz, const rgba_osd_size_t *canvas_pos,
-    const rgba_osd_pixel_t *payload, const rgba_osd_size_t *payload_sz, const rgba_osd_size_t *payload_pos);
+void rgba_osd_overlay_algorithm_replace_non_alpha(rgba_osd_pixel_t *canvas, const rgba_osd_size_t *canvas_sz,
+                                                  const rgba_osd_size_t *canvas_pos, const rgba_osd_pixel_t *payload,
+                                                  const rgba_osd_size_t *payload_sz);
 
 #ifdef __cplusplus
 }
