@@ -10,8 +10,9 @@ struct rgba_osd
     rgba_osd_config_t config;      /**< User configuration. */
     size_t            pixel_sz;    /**< The number of pixels. */
     size_t            pixel_bytes; /**< The bytes of pixels. Equal to pixel_sz * sizeof(rgba_osd_pixel_t). */
-    rgba_osd_pixel_t *old_pixels;
-    rgba_osd_pixel_t *new_pixels;
+    rgba_osd_pixel_t *dif_pixels;  /**< The differences between old and new pixles. */
+    rgba_osd_pixel_t *old_pixels;  /**< Old canvas pixels */
+    rgba_osd_pixel_t *new_pixels;  /**< New canvas pixels. */
 };
 
 /**
@@ -119,7 +120,7 @@ int rgba_osd_init(rgba_osd_t **osd, const rgba_osd_config_t *config)
     rgba_osd_realloc_fn realloc_fn = config->realloc != NULL ? config->realloc : realloc;
     size_t              canvas_pixels_cnt = config->size.x * config->size.y;
     size_t              canvas_pixel_bytes = sizeof(rgba_osd_pixel_t) * canvas_pixels_cnt;
-    size_t              malloc_sz = sizeof(rgba_osd_t) + canvas_pixel_bytes * 2;
+    size_t              malloc_sz = sizeof(rgba_osd_t) + canvas_pixel_bytes * 3;
     rgba_osd_t         *handle = realloc_fn(NULL, malloc_sz);
     if (handle == NULL)
     {
@@ -130,7 +131,8 @@ int rgba_osd_init(rgba_osd_t **osd, const rgba_osd_config_t *config)
     handle->config.realloc = realloc_fn;
     handle->pixel_sz = canvas_pixels_cnt;
     handle->pixel_bytes = canvas_pixel_bytes;
-    handle->old_pixels = (rgba_osd_pixel_t *)(handle + 1);
+    handle->dif_pixels = (rgba_osd_pixel_t *)(handle + 1);
+    handle->old_pixels = handle->dif_pixels + canvas_pixels_cnt;
     handle->new_pixels = handle->old_pixels + canvas_pixels_cnt;
 
     memset(handle->old_pixels, 0, handle->pixel_bytes);
@@ -163,9 +165,22 @@ void rgba_osd_new_frame(rgba_osd_t *osd)
     memset(osd->new_pixels, 0, osd->pixel_bytes);
 }
 
-void rgba_osd_end_frame(rgba_osd_t *osd)
+rgba_osd_pixel_t *rgba_osd_end_frame(rgba_osd_t *osd)
 {
-    (void)osd;
+    size_t x, y;
+    for (y = 0; y < osd->config.size.y; y++)
+    {
+        for (x = 0; x < osd->config.size.x; x++)
+        {
+            size_t           offset = y * osd->config.size.x + x;
+            rgba_osd_pixel_t old_pixel = osd->old_pixels[offset];
+            rgba_osd_pixel_t new_pixel = osd->new_pixels[offset];
+
+            osd->dif_pixels[offset] = new_pixel != old_pixel ? new_pixel : 0;
+        }
+    }
+
+    return osd->dif_pixels;
 }
 
 void rgba_osd_overlay(rgba_osd_t *osd, const rgba_osd_pixel_t *payload, const rgba_osd_size_t *payload_sz,

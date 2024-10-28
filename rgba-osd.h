@@ -108,8 +108,10 @@ void rgba_osd_new_frame(rgba_osd_t *osd);
 /**
  * @brief End the frame and render it.
  * @param[in] osd   The OSD handle.
+ * @return A convas that contains changed pixels from previous frame. To get
+ *   full canvas, use #rgba_osd_canvas().
  */
-void rgba_osd_end_frame(rgba_osd_t *osd);
+rgba_osd_pixel_t *rgba_osd_end_frame(rgba_osd_t *osd);
 
 /**
  * @brief Render the \p pixels with size \p size on canvas with position \p pos.
