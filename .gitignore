@@ -1,3 +1,4 @@
+# CMake files
 CMakeLists.txt.user
 CMakeCache.txt
 CMakeFiles
@@ -9,4 +10,37 @@ install_manifest.txt
 compile_commands.json
 CTestTestfile.cmake
 _deps
-CMakeUserPresets.json
+
+# Temporary build files
+/build
+/build.*
+/.vs
+/out
+*.tmp
+/CMakeSettings.json
+/cmake-build-debug
+
+# Html document files
+/docs/html
+
+# LSP
+compile_commands.json
+.cache
+
+# Eclipse
+/.settings
+/.cproject
+/.project
+
+# Good Sync
+/_gsdata_
+
+# FreeFileSync
+/sync.ffs_db
+
+# JetBrains
+/.idea
+
+# vscode
+/.vscode
+
