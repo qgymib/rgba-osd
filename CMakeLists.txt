@@ -34,8 +34,8 @@ target_compile_options(${PROJECT_NAME}
 )
 
 target_include_directories(${PROJECT_NAME}
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/src
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 setup_target_wall(${PROJECT_NAME})
